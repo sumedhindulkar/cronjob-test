@@ -1,10 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
-const express = require("express");
 const mongoose = require("mongoose");
 const { Sra } = require("./models/sra");
-const PORT = process.env.PORT || 8000;
-const app = express();
 const axios = require("axios");
 mongoose
   .connect(process.env.MONGO_URI)
@@ -13,7 +10,7 @@ mongoose
   })
   .catch((err) => console.log("DatabaseConnection error: " + err));
 
-app.get("/", async (req, res) => {
+const app = async () => {
   try {
     const data = await Sra.find();
 
@@ -35,16 +32,16 @@ app.get("/", async (req, res) => {
       });
       const options = {
         method: "GET",
-        url: process.env.AWS_URL,
+        url: "https://cdoc5hjkfkguk3nyjxadp2i5pi0xqcut.lambda-url.ap-south-1.on.aws/",
         headers: {
           "content-type": "application/json",
         },
         data: { keywords: x.keywords, negativeKeywords: x.negativeKeywords },
       };
       const results = await axios(options);
-      // console.log("=======================");
-      // console.log(JSON.stringify(results.data.data));
-      // console.log("=======================");
+      console.log("=======================");
+      console.log(JSON.stringify(results.data.data));
+      console.log("=======================");
       const updatedData = await Sra.findOneAndUpdate(
         { _id: x.id },
         {
@@ -59,13 +56,10 @@ app.get("/", async (req, res) => {
       console.log(updatedData);
     }
 
-    res.json({ msg: "successfully Implemented", updatedData });
+    // res.json({ msg: "successfully Implemented", up });
   } catch (err) {
     console.log(err);
-    res.json({ msg: "UFF ERR", err });
+    // res.json({ msg: "UFF ERR", err });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`App running on PORT: ${PORT}`);
-});
+};
+app();
